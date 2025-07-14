@@ -1,0 +1,4 @@
+Flask
+yt-dlp
+openai-whisper
+Flask-Cors
