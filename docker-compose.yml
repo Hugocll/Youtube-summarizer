@@ -1,0 +1,42 @@
+services:
+  backend:
+    build: ./backend
+    container_name: youtube_summarizer_backend
+    ports:
+      - "53124:5000"
+    environment:
+      - PORT=5000
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Use named volumes for cross-platform compatibility
+      - audio_downloads:/app/audio_downloads
+      - video_downloads:/app/video_downloads
+    networks:
+      - youtube_summarizer_network
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: youtube_summarizer_frontend
+    ports:
+      - "52123:3000"
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:53124
+      - REACT_APP_ENVIRONMENT=docker
+    depends_on:
+      - backend
+    networks:
+      - youtube_summarizer_network
+    restart: unless-stopped
+
+# Define named volumes for persistent storage
+volumes:
+  audio_downloads:
+    driver: local
+  video_downloads:
+    driver: local
+
+# Define custom network
+networks:
+  youtube_summarizer_network:
+    driver: bridge
