@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* You can add global styles here */
+/* Modern Dark Theme Global Styles */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -10,6 +10,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #0f0f0f;
+  color: #e5e7eb;
 }
 
 code {
@@ -23,4 +25,134 @@ code {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Modern Dark Theme Components */
+@layer components {
+  /* Dark buttons with thin lighter borders and shadows */
+  .btn-dark {
+    @apply bg-[#2a2a2a] border border-[#3a3a3a] text-gray-300 hover:bg-[#3a3a3a] hover:text-white transition-all duration-200;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .btn-dark:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Card styles with shadows */
+  .card-dark {
+    @apply bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-dark:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Input styles */
+  .input-dark {
+    @apply bg-[#2a2a2a] border border-[#3a3a3a] text-gray-100 placeholder-gray-400 rounded-lg;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .input-dark:focus {
+    @apply ring-2 ring-opacity-50 border-opacity-50;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(147, 51, 234, 0.1);
+  }
+
+  /* Gradient buttons */
+  .btn-gradient-primary {
+    @apply bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-gradient-primary:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .btn-gradient-blue {
+    @apply bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-gradient-green {
+    @apply bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-lg transition-all duration-200 transform hover:scale-105;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Scrollbar styling for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4a;
+}
+
+/* Selection styling */
+::selection {
+  background-color: rgba(147, 51, 234, 0.3);
+  color: #ffffff;
+}
+
+/* Focus outline for accessibility */
+.focus-visible {
+  @apply outline-none ring-2 ring-purple-500 ring-opacity-50;
+}
+
+/* Animation for loading states */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 5px rgba(147, 51, 234, 0.5);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 20px rgba(147, 51, 234, 0.8);
+  }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Notification styles */
+.notification {
+  @apply fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white font-medium;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.notification.success {
+  @apply bg-green-600;
+}
+
+.notification.error {
+  @apply bg-red-600;
+}
+
+.notification.info {
+  @apply bg-blue-600;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }

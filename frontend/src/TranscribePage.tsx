@@ -1,6 +1,6 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
 import type { JSX } from 'react/jsx-runtime';
-import { getApiUrl } from './config/api';
+import { getApiUrl, debugApiConfig } from './config/api';
 
 interface VideoInfo {
   title: string;
@@ -12,15 +12,19 @@ interface VideoInfo {
   id: string;
 }
 
-function SummarizePage(): JSX.Element {
+function TranscribePage(): JSX.Element {
   const [youtubeUrl, setYoutubeUrl] = useState<string>('');
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [transcript, setTranscript] = useState<string>('');
-  const [summary, setSummary] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [isLoadingPreview, setIsLoadingPreview] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [previewError, setPreviewError] = useState<string>('');
+
+  // Debug API configuration on component mount
+  useEffect(() => {
+    debugApiConfig();
+  }, []);
 
   // Helper function to check if URL is a valid YouTube URL
   const isValidYouTubeUrl = (url: string): boolean => {
@@ -88,32 +92,24 @@ function SummarizePage(): JSX.Element {
     return () => clearTimeout(timeoutId);
   }, [youtubeUrl]);
 
-  const handleSummarize = async (): Promise<void> => {
-    const savedApiKey = localStorage.getItem('openrouter_api_key');
-    if (!savedApiKey) {
-      setError('Please configure your OpenRouter API key first in Settings.');
-      return;
-    }
-
+  const handleTranscribe = async (): Promise<void> => {
     setLoading(true);
     setError('');
     setTranscript('');
-    setSummary('');
 
     try {
-      const response = await fetch(getApiUrl('/summarize'), {
+      const response = await fetch(getApiUrl('/transcribe'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: youtubeUrl, apiKey: savedApiKey }),
+        body: JSON.stringify({ url: youtubeUrl }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         setTranscript(data.transcript);
-        setSummary(data.summary);
       } else {
         setError(data.error || 'An unknown error occurred.');
       }
@@ -127,22 +123,23 @@ function SummarizePage(): JSX.Element {
 
   const handleCopyTranscript = (): void => {
     navigator.clipboard.writeText(transcript);
-    alert('Transcript copied to clipboard!');
+    // Replace alert with a more modern notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+    notification.textContent = 'Transcript copied to clipboard!';
+    document.body.appendChild(notification);
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 3000);
   };
-
-  const handleCopySummary = (): void => {
-    navigator.clipboard.writeText(summary);
-    alert('Summary copied to clipboard!');
-  };
-
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">AI Summarization</h1>
-          <p className="text-gray-400 mt-2">Get intelligent summaries of video content using advanced AI</p>
+          <h1 className="text-3xl font-bold text-white">Transcribe Video</h1>
+          <p className="text-gray-400 mt-2">Convert YouTube videos to accurate text transcripts</p>
         </div>
       </div>
 
@@ -160,7 +157,7 @@ function SummarizePage(): JSX.Element {
             value={youtubeUrl}
             onChange={handleUrlChange}
             disabled={loading}
-            className="w-full p-4 rounded-lg bg-[#2a2a2a] border border-[#3a3a3a] focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 text-gray-100 placeholder-gray-400 transition-all duration-200 shadow-sm"
+            className="w-full p-4 rounded-lg bg-[#2a2a2a] border border-[#3a3a3a] focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-100 placeholder-gray-400 transition-all duration-200 shadow-sm"
           />
         </div>
 
@@ -178,8 +175,8 @@ function SummarizePage(): JSX.Element {
 
         {/* Loading state for preview */}
         {isLoadingPreview && (
-          <div className="flex items-center justify-center gap-3 text-purple-400 mb-6 p-4">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-400"></div>
+          <div className="flex items-center justify-center gap-3 text-blue-400 mb-6 p-4">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400"></div>
             <span>Loading video preview...</span>
           </div>
         )}
@@ -240,56 +237,35 @@ function SummarizePage(): JSX.Element {
         <div className="flex justify-center mb-6">
           {loading ? (
             <div className="flex items-center justify-center gap-3 p-4">
-              <svg className="animate-spin h-8 w-8 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="animate-spin h-8 w-8 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span className="text-lg text-gray-300">Processing and summarizing...</span>
+              <span className="text-lg text-gray-300">Processing video...</span>
             </div>
           ) : (
             videoInfo && !isLoadingPreview && (
               <button
-                onClick={handleSummarize}
+                onClick={handleTranscribe}
                 disabled={loading}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 <div className="flex items-center space-x-2">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span>Get Summary</span>
+                  <span>Get Transcript</span>
                 </div>
               </button>
             )
           )}
         </div>
 
-        {/* Summary Result */}
-        {summary && (
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold text-gray-300">AI Summary</h2>
-              <button
-                onClick={handleCopySummary}
-                className="bg-[#2a2a2a] border border-[#3a3a3a] hover:bg-[#3a3a3a] text-gray-300 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center space-x-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                <span>Copy</span>
-              </button>
-            </div>
-            <div className="bg-[#2a2a2a] border border-[#3a3a3a] p-6 rounded-lg shadow-sm">
-              <p className="text-gray-100 leading-relaxed whitespace-pre-wrap">{summary}</p>
-            </div>
-          </div>
-        )}
-
         {/* Transcript Result */}
         {transcript && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold text-gray-300">Full Transcript</h2>
+              <h2 className="text-2xl font-semibold text-gray-300">Transcription Result</h2>
               <button
                 onClick={handleCopyTranscript}
                 className="bg-[#2a2a2a] border border-[#3a3a3a] hover:bg-[#3a3a3a] text-gray-300 px-4 py-2 rounded-lg transition-colors shadow-sm flex items-center space-x-2"
@@ -303,8 +279,8 @@ function SummarizePage(): JSX.Element {
             <textarea
               readOnly
               value={transcript}
-              className="w-full h-80 p-4 rounded-lg bg-[#2a2a2a] border border-[#3a3a3a] text-gray-100 resize-none overflow-y-auto focus:outline-none focus:ring-2 focus:ring-purple-500/20 shadow-sm"
-              placeholder="Full transcript will appear here..."
+              className="w-full h-80 p-4 rounded-lg bg-[#2a2a2a] border border-[#3a3a3a] text-gray-100 resize-none overflow-y-auto focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm"
+              placeholder="Transcript will appear here..."
             ></textarea>
           </div>
         )}
@@ -313,4 +289,4 @@ function SummarizePage(): JSX.Element {
   );
 }
 
-export default SummarizePage;
+export default TranscribePage;
