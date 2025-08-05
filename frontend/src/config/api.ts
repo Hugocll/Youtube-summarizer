@@ -28,10 +28,10 @@ class ApiConfigManager {
       if (this.isRunningInDocker()) {
         baseUrl = 'http://localhost:53124';
       } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        baseUrl = 'http://localhost:53124';
+        baseUrl = 'http://localhost:5001';
       } else {
         // Production fallback
-        baseUrl = `${window.location.protocol}//${window.location.hostname}:53124`;
+        baseUrl = `${window.location.protocol}//${window.location.hostname}:5001`;
       }
     }
 
